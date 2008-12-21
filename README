@@ -1,0 +1,4 @@
+Author: Nicholas Dunn
+Date:   December 20, 2008
+
+The purpose of this tool is to allow law enforcement agencies around the country/world to assemble a database of MD5 and SHA-1 hashes of child pornography.  It also extracts bytes from specific offsets of the files which can be used to find contraband that has been deleted from a suspect's hard drive but not overwritten with data.
