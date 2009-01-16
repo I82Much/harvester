@@ -10,22 +10,17 @@ public class TableRow {
     private File file;
     private String md5Hash;
     private String sha1Hash;
-    private String hexBytes;
     private String fileType;
-    private int offset;
-    private int numBytes;
-    
+    private BytesResult hexBytes;
+     
     
     public TableRow(File f, String md5, String sha1Hash,
-                    String hex, String type, int offset,
-                    int numBytes) {
+                    BytesResult hex, String type) {
         this.file = f;
         this.md5Hash = md5;
         this.sha1Hash = sha1Hash;
         this.hexBytes = hex;
         this.fileType = type;
-        this.offset = offset;
-        this.numBytes = numBytes;
     }
     
     public File getFile() {
@@ -41,25 +36,37 @@ public class TableRow {
     }
     
     public String getHexBytes() {
-        return hexBytes;
+        return hexBytes.getByteString();
     }
     
     public String getFileType() {
         return fileType;
     }
-    
-    public int getOffset() { return offset; }
-    
-    public int getNumBytes() { return numBytes; }
-    
-    public void setOffset(int offset) { this.offset = offset; }
-    
-    public void setNumBytes(int numBytes) { this.numBytes = numBytes; }
-    
-    public void setHexBytes(String hexBytes) { this.hexBytes = hexBytes; }
    
+    public int getNumUniqueBytes() {
+        return hexBytes.getNumUniqueBytes();
+    }
+       
+    public int getOffset() { return hexBytes.getOffset(); }
+    
+    public int getNumBytes() { return hexBytes.getNumBytes(); }
+    
+    public void setOffset(int offset) { hexBytes.setOffset(offset); }
+    
+    public void setNumBytes(int numBytes) { hexBytes.setNumBytes(numBytes); }
+    
+    public void setHexBytes(String newHexBytes) { hexBytes.setByteString(newHexBytes); }
+   
+    public void setHexBytesResult(BytesResult result) { 
+        this.hexBytes = result;
+    }
+    
+    
+    
     public String getByteString() { 
         StringBuilder s = new StringBuilder();
+        int offset = hexBytes.getOffset();
+        int numBytes = hexBytes.getNumBytes();
         s.append(offset);
         s.append(" to ");
         s.append((offset + numBytes - 1));

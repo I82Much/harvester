@@ -9,7 +9,9 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 /**
  * Class handles the rendering of the table of data.  Rows will appear color
- * coded according to their file type
+ * coded according to their file type.  Furthermore, rows that have too few
+ * unique hex bytes (e.g. all of the hex bytes are the same) show up in 
+ * a different color
  * @see http://www.java-forums.org/awt-swing/541-how-change-color-jtable-row-having-particular-value.html
  * @author Nick Dunn
  * @date   November 16, 2008
@@ -20,7 +22,7 @@ public class TableRenderer extends DefaultTableCellRenderer {
     public static final Color VIDEO_COLOR = Color.BLACK;
     public static final Color IMAGE_COLOR = Color.BLACK;
     
-    public static final Color EMPTY_BYTES_COLOR = Color.ORANGE;
+    public static final Color NOT_UNIQUE_COLOR = Color.MAGENTA;
     
     public static final Font MONO = new Font("Monospaced", Font.PLAIN, 13);
     
@@ -47,7 +49,8 @@ public class TableRenderer extends DefaultTableCellRenderer {
         // Since we allow sorting, we need to convert back to model coordinates
         int modelIndex = table.convertRowIndexToModel(row);
         
-        String s =  table.getModel().getValueAt(modelIndex, PoliceModel.FILE_TYPE_INDEX ).toString();
+        String s =  table.getModel().getValueAt(modelIndex, 
+                                                PoliceModel.FILE_TYPE_INDEX).toString();
 
         if(s.equals( PoliceModel.IMAGE_STRING) )
         {
@@ -60,17 +63,13 @@ public class TableRenderer extends DefaultTableCellRenderer {
         else {
             comp.setForeground(UNKNOWN_COLOR);
         }
-        /*
-        String hex = table.getModel().getValueAt(modelIndex, PoliceModel.HEX_BYTES_INDEX).toString();
-        if (hex.startsWith(PoliceModel.EMPTY_BYTES)) {
-            comp.setBackground(EMPTY_BYTES_COLOR);
+       
+        PoliceModel model = (PoliceModel) table.getModel();
+        if (!model.isUnique(modelIndex)) {
+            comp.setForeground(NOT_UNIQUE_COLOR);
         }
-        else {
-            comp.setBackground(comp.getBackground());
-        }*/
-        return( comp );
-
-        
+      
+        return comp;
     }
     
 }

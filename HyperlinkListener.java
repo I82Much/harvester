@@ -35,8 +35,6 @@ public class HyperlinkListener extends MouseAdapter {
             URI uri = null;
             try {
                 uri = new URI(url);
-
-                
                 desktop.browse(uri);
             } catch (IOException ex) {
                 Logger.getLogger(HyperlinkListener.class.getName()).log(Level.SEVERE, null, ex);
@@ -54,6 +52,7 @@ public class HyperlinkListener extends MouseAdapter {
         e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
     
+    @Override
     public void mouseExited(MouseEvent e) {
         e.getComponent().setCursor(Cursor.getDefaultCursor());
     }

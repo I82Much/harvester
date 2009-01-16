@@ -6,7 +6,7 @@ import java.security.*;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
+/**ß
  * This class does the MD5 hashing and extracts the bytes specified at a given
  * offset
  * @author Tucker Hermans - original implementation
@@ -16,10 +16,9 @@ import java.util.List;
  */
 public class FileHashConverter
 {
-    // Constants
-    private final static int DEFAULT_8_BYTE_START = 4000;
-    private final static int BYTE_COUNT = 8; // The number of bytes to convert
-
+    
+    // Instead of attempting to read the whole file in at once, we read only
+    // a portion at a time.  This ensures that we do not run out of memory.
     private final static int BUFFER_SIZE = (int) Math.pow(2, 25);
     
     public enum BASE_FORMAT {
@@ -29,18 +28,9 @@ public class FileHashConverter
         BASE_8   // octal
     }
     
-    /**
-     * Get the MD5 for the file
-     *
-     * @param input The file object to be looked at
-     * @return The MD5 of the file
-     */
-    public static String getFileMD5Hash(String input) throws
-        FileNotFoundException, IOException, NoSuchAlgorithmException
-    {
-        return getFileMD5Hash(new File(input));
-    }
-
+    // There are 2^8 or 256 different byte values.
+    public static final int NUM_BYTES_POSSIBLE = (int) Math.pow(2, Byte.SIZE);
+    
     
     public static List<String> getFileHashes(File input, List<HashRequest> hashingRequests) 
                                              
@@ -122,88 +112,39 @@ public class FileHashConverter
     }
     
     
-    /**
-     * Get the MD5 for the file.
-     * @see http://www.javalobby.org/java/forums/t84420.html
-     *
-     * @param input The file object to be looked at
-     * @return The MD5 of the file
-     */
-    public static String getFileMD5Hash(File input) throws
-        FileNotFoundException, IOException, NoSuchAlgorithmException
-    {
-        
-        byte[] buffer = new byte[Math.min(BUFFER_SIZE, (int) input.length())];
-         
-        int read = 0;
-        
-        // Create an input stream from the file; we might not
-        // be able to fit the whole file in memory
-        FileInputStream fis = new FileInputStream(input);
-
-        // Get an instance of the MD5 hashing algorithm
-        MessageDigest algorithm = MessageDigest.getInstance("MD5");
-        algorithm.reset();
-        
-        
-        // Calculate the MD5 of the file
-        
-        // There's more to the file to be read
-        while ( (read = fis.read(buffer)) != -1)  {
-            algorithm.update(buffer, 0, read);
-        }
-        
-        
-        
-        // The result of the hashing algorithm
-        byte[] messageDigest = algorithm.digest();
-
-        StringBuffer hexString = new StringBuffer();
-        for (int i=0;i<messageDigest.length;i++) {
-            hexString.append(Integer.toHexString(0xFF & messageDigest[i]));
-        }
-
-        // Save our file MD5 hex
-        return hexString.toString();
-    }
-
+    
     
     public static boolean canExtractBytes(File f, int offset, int numBytes) {
-        //return f.length() >= offset + numBytes;
-        //return f.length() >= numBytes;
         return f.length() > 0;
     }
     
     
-    /**
-     * Default hex calculation to file byte 4000 
-     *
-     * @param input The file to be evaluated
-     * @return The hex values to the default 8 bytes
-     */
-    public static String getFileByteHex(File input)  throws
-        FileNotFoundException, IOException, NoSuchAlgorithmException, Exception
-    {
-        return getFileByteHex(DEFAULT_8_BYTE_START, BYTE_COUNT, input);
-    }
+ 
+    
+  
 
+    
     /**
-     * Default hex calculation to file byte 4000 (last 8 if file is too small)
+     * Extracts the numBytes bytes starting at offset start in the file.
+     * If the file is too small, does not give an error, merely returns an object
+     * whose byte string is a warning message that no bytes could be extracted.
+     * Note that the bytes are converted into a positive range before being 
+     * converted into a string.
      *
      * @param start How many bytes to skip before extracting bytes
      * @param numBytes how many bytes to explor
      * @param input The file to be evaluated
-     * @return The hex values to the numBytes bytes starting at start
+     * @return An object encapsulating the start offset, the number of bytes 
+     * extracted, how many of these bytes were distinct, and the actual byte
+     * string.  
      */
-    public static String getFileByteHex(int start, int numBytes, File input)  throws
-        FileNotFoundException, IOException, NoSuchAlgorithmException, Exception
+    public static BytesResult getFileByteHex(int start, int numBytes, File input)  throws
+        FileNotFoundException, IOException 
     {
         
         // Check to make sure the specified hex value is not too large
         if ( input.length() < start + numBytes -1) {
-            //throw new Exception("File size too small for byte start point " +
-              //                  start);
-            return "Not enough bytes for this offset";
+            return new BytesResult(start, numBytes, 0, "Not enough bytes for this offset");
         }
         
         // Allocate enough space to read the numBytes bytes
@@ -216,10 +157,12 @@ public class FileHashConverter
         // bytes that come before it
         fis.skip(start);
         
-        
-        
         //  Read the specified bytes into the byte array
-        int numBytesRead = fis.read(fileBytes, 0, numBytes);
+        fis.read(fileBytes, 0, numBytes);
+        
+        
+        int numUniqueBytes = countUniqueBytes(fileBytes);
+        
         
         StringBuffer hexString = new StringBuffer();
         for(int i = 0; i < numBytes; i++) {
@@ -236,58 +179,30 @@ public class FileHashConverter
                 hexString.append(hexStr);
             }
         }
-        return hexString.toString();
+        return new BytesResult(start, numBytes, numUniqueBytes, hexString.toString());
     }
 
     /**
-     * Get default formatted text output
-     *
-     * @param myFile File object to be used
-     * @return The formatted combination of the MD5 with default Hex values
+     * Given an array of raw bytes, determine how many of them are unique.
+     * For instance, if there are 8 bytes in the array and all 8 are different,
+     * this method would return 8.  If there are 8 repeated bytes, this method
+     * would return 1.
+     * @param bytes the array to check for uniqueness.
+     * @return the number of different byte values in the array
      */
-    public static String getFormattedText(String myFile)  throws
-        FileNotFoundException, IOException, NoSuchAlgorithmException, Exception
-    {
-        return getFormattedText(DEFAULT_8_BYTE_START, new File(myFile));
-    }
-
-
-    /**
-     * Get default formatted text output
-     *
-     * @param myFile File object to be used
-     * @return The formatted combination of the MD5 with default Hex values
-     */
-    public static String getFormattedText(File myFile) throws
-        FileNotFoundException, IOException, NoSuchAlgorithmException, Exception
-    {
-        return getFormattedText(DEFAULT_8_BYTE_START, myFile);
-    }
-
-    /**
-     * Get formatted text output for specifc byte position
-     *
-     * @param start The first byte of 8 to calculate the hex values of
-     * @param myFile File object to be used
-     * @return The formatted combination of the MD5 with default Hex values
-     */
-    public static String getFormattedText(int start, File myFile) throws
-        FileNotFoundException, IOException, NoSuchAlgorithmException, Exception
-    {
-        return getFileMD5Hash(myFile).concat(", ").
-            concat(getFileByteHex(start, BYTE_COUNT, myFile));
-    }
-
-
-    // Main method to test the program
-    public static void main(String[] args)
-    {
-        for(String s : args) {
-            try {
-                System.out.println(getFormattedText(s));
-            } catch (Exception e) {
-                System.err.println(e.getMessage());
+    public static int countUniqueBytes(byte[] bytes) {
+        
+        int[] counts = new int[NUM_BYTES_POSSIBLE];
+        int numUnique = 0;
+        for (byte b: bytes) {
+            int index = 0xFF & b;
+            if (counts[index] == 0) {
+                numUnique++;
             }
+            counts[index]++;
         }
+        return numUnique;
     }
+    
+   
 }

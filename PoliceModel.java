@@ -11,6 +11,7 @@ import java.beans.PropertyChangeListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -58,13 +59,14 @@ public class PoliceModel extends AbstractTableModel {
     private FileFilter videoFilter;
     private FileFilter imageFilter;
     
-    public static final int NUM_COLS = 6;
+    public static final int NUM_COLS = 7;
     public static final int FILES_INDEX = 0;
     public static final int MD5_INDEX = 1;
     public static final int SHA_1_INDEX = 2;
     public static final int BYTES_EXTRACTED_INDEX = 3;
     public static final int HEX_BYTES_INDEX = 4;
-    public static final int FILE_TYPE_INDEX = 5;
+    public static final int NUM_UNIQUE_BYTES_INDEX = 5;
+    public static final int FILE_TYPE_INDEX = 6;
     
     
     public static final String DEFAULT_OUTPUT_NAME = "output.txt";
@@ -75,17 +77,13 @@ public class PoliceModel extends AbstractTableModel {
     
     public static final String BYTES_EXTRACTED_STRING = "Bytes Extracted";
     
-    
     public static final String HEX_BYTES_STRING = "Hex bytes";
+    public static final String NUM_UNIQUE_BYTES_STRING = "Number of unique bytes";
     public static final String FILE_TYPE_STRING = "File Type";
     
     public static final String IMAGE_STRING = "Image";
     public static final String VIDEO_STRING = "Video";
     public static final String UNKNOWN_STRING = "Unknown";
-    
-    
-    public static final String EMPTY_BYTES = "\\x00\\x00\\x00\\x00";
-    
     
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
     public static final String COLUMN_SEPARATOR = ",";
@@ -96,8 +94,6 @@ public class PoliceModel extends AbstractTableModel {
     
     public static final String DEFAULT_NUM_BYTES_STRING = "defaultNumBytes";
     public static final String DEFAULT_BYTE_OFFSET_STRING = "defaultByteOffset";
-    
-    
     
     private int numBytes;
     private int offset;
@@ -158,9 +154,65 @@ public class PoliceModel extends AbstractTableModel {
         fireTableChanged(new TableModelEvent(this, TableModelEvent.HEADER_ROW));
     }
     
+    /**
+     * User can only write to disk if he has more than 0 entries
+     * @return
+     */
     public boolean canSave() {
         return data.size() > 0;
     }
+    
+    public static boolean isUniqueEnough(int numUniqueBytes) {
+        return numUniqueBytes > 3;
+    }
+    
+    public boolean isUnique(int row) {
+        return PoliceModel.isUniqueEnough(data.get(row).getNumUniqueBytes());
+    }
+    
+    /**
+     * This method allows the user to change which bytes are taken from some
+     * files without changing the global settings.  For instance, if a file has
+     * a string of \x00 bytes, the user might wish to specify a new range of
+     * bytes to extract, so that the 'fingerprint' is more unique.
+     * @param modelRows the row numbers which should be modified
+     * @param newOffset the new offset from which to extract the bytes.  For 
+     * instance, if newOffset is 0, we would extract the first newNumBytes bytes
+     * from the file.  Must be non-negative
+     * @param newNumBytes the number of bytes to extract.  Must be non-negative
+     */
+    public void editOffsets(int[] modelRows, int newOffset, int newNumBytes) {
+        if (newNumBytes < 0) {
+            view.setStatusText("Error, number of bytes must be positive");
+            return;
+        }
+        if (newOffset < 0) {
+            view.setStatusText("Error, offset must be positive");
+            return;
+        }
+        
+        
+        for (int row : modelRows) {
+            TableRow curRow = data.get(row);
+            
+            File f = curRow.getFile();
+            try {
+                BytesResult result = FileHashConverter.getFileByteHex(newOffset, newNumBytes, f);
+                curRow.setHexBytesResult(result);
+            }
+            catch (FileNotFoundException e) {
+                view.logError("Error, could not find file " + f.getName());
+            }
+            catch (IOException e) {
+                view.logError("Error, failed to open file " + f.getName());
+            }
+        }
+        
+        // We need to notify listeners that the table has changed
+        fireTableDataChanged();
+        
+    }
+    
     
     
     /**
@@ -175,8 +227,9 @@ public class PoliceModel extends AbstractTableModel {
      * files
      * @return a list of File objects, none of which will be a directory
      */
-    public List<File> flattenDirectoryTree(File[] files, javax.swing.filechooser.FileFilter
- filter) {
+    public List<File> flattenDirectoryTree(File[] files, 
+                                           javax.swing.filechooser.FileFilter
+                                           filter) {
         LinkedList<File> fileList = new LinkedList<File>();
         
         for (File f : files) {
@@ -186,8 +239,8 @@ public class PoliceModel extends AbstractTableModel {
     }
     
     
-    public void addFile(File f, List<File> fileList, javax.swing.filechooser.FileFilter
- filter) {
+    public void addFile(File f, List<File> fileList, 
+                        javax.swing.filechooser.FileFilter filter) {
         
         if (!f.exists() || !filter.accept(f)) {
             return;
@@ -215,7 +268,6 @@ public class PoliceModel extends AbstractTableModel {
     }
     
    
-   
     
     
     public void addDirectory(File dir, List<File> fileList, javax.swing.filechooser.FileFilter
@@ -232,8 +284,6 @@ public class PoliceModel extends AbstractTableModel {
         int endIndex = data.size() - 1;
         fireTableRowsInserted(startIndex, endIndex);
         
-        
-        //fireTableDataChanged();
     }
 
     
@@ -264,7 +314,6 @@ public class PoliceModel extends AbstractTableModel {
         File[] fileArray = (File[]) files.toArray();
         addFiles(fileArray, filter);
     }
-    
     
     
     
@@ -322,15 +371,14 @@ public class PoliceModel extends AbstractTableModel {
     
     public void openFiles(Desktop desktop, int[] rows) {
         
-            for (int row : rows) {
-                try {
-                    desktop.open(data.get(row).getFile());
-                } catch (IOException ex) {
-                    Logger.getLogger(PoliceModel.class.getName()).log(Level.SEVERE, null, ex);
-                    view.logError(ex.getLocalizedMessage());
-                }
+        for (int row : rows) {
+            try {
+                desktop.open(data.get(row).getFile());
+            } catch (IOException ex) {
+                Logger.getLogger(PoliceModel.class.getName()).log(Level.SEVERE, null, ex);
+                view.logError(ex.getLocalizedMessage());
             }
-        
+        }
     }
     
     
@@ -350,7 +398,6 @@ public class PoliceModel extends AbstractTableModel {
     
     public void removeRow(int row) {
         data.remove(row);
-        
     }
     
     
@@ -367,6 +414,8 @@ public class PoliceModel extends AbstractTableModel {
                 return BYTES_EXTRACTED_STRING;
             case HEX_BYTES_INDEX:
                 return HEX_BYTES_STRING;
+            case NUM_UNIQUE_BYTES_INDEX:
+                return NUM_UNIQUE_BYTES_STRING;
             case FILE_TYPE_INDEX:
                 return FILE_TYPE_STRING;
             default:
@@ -407,6 +456,8 @@ public class PoliceModel extends AbstractTableModel {
                 
             case BYTES_EXTRACTED_INDEX:
                 return data.get(row).getByteString();
+            case NUM_UNIQUE_BYTES_INDEX:
+                return data.get(row).getNumUniqueBytes();
             case FILE_TYPE_INDEX:
                 return data.get(row).getFileType();
             default:

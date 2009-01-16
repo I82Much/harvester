@@ -17,7 +17,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.print.PrinterException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -39,6 +38,7 @@ import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableRowSorter;
 
 /**
  * The application's main frame.
@@ -126,7 +126,7 @@ public class PoliceView extends FrameView implements ListSelectionListener {
         }
         public void actionPerformed(ActionEvent e) {
             if (e.getActionCommand().equals(EXTRACT_STRING)) {
-                // view.extractNewBytes();
+                view.extractNewBytes();
             }
             else if (e.getActionCommand().equals(DELETE_STRING)) {
                 view.deleteRows();
@@ -172,7 +172,7 @@ public class PoliceView extends FrameView implements ListSelectionListener {
         
         launchFile.addActionListener(rightClicker);
         
-        //popupMenu.add(extractBytes);
+        popupMenu.add(extractBytes);
         popupMenu.add(launchFile);
         
         popupMenu.add(deleteRows);
@@ -389,11 +389,13 @@ public class PoliceView extends FrameView implements ListSelectionListener {
         displayTable.setName("displayTable"); // NOI18N
         jScrollPane1.setViewportView(displayTable);
         displayTable.setDefaultRenderer(Object.class, new TableRenderer());
-        displayTable.setAutoCreateRowSorter(true);
+        TableRowSorter sorter = new TableRowSorter(model);
+        sorter.setComparator(PoliceModel.NUM_UNIQUE_BYTES_INDEX, new NumericalComparator());
+        displayTable.setRowSorter(sorter);
 
         // Ensure that the user can drop anywhere in the table
         displayTable.setFillsViewportHeight(true);
-
+        // Show a hand icon when mousing over the header
         displayTable.getTableHeader().addMouseListener(new ClickableListener());
 
         jPanel2.setName("jPanel2"); // NOI18N
@@ -479,7 +481,7 @@ public class PoliceView extends FrameView implements ListSelectionListener {
                 .addContainerGap()
                 .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE))
         );
 
         mainPanel.addPropertyChangeListener("dropLocation", new TableRepainter());
@@ -627,13 +629,7 @@ public class PoliceView extends FrameView implements ListSelectionListener {
         else {
             launchFileChooser();
         }
-        try {
-            displayTable.print();
-        }
-        catch (PrinterException e) {
-            e.printStackTrace();
-        }
-    }
+    } 
     
     
     @Action
@@ -838,6 +834,12 @@ public class PoliceView extends FrameView implements ListSelectionListener {
         }
     }
     
+    /**
+     * Queries user as to what bytes he wants extracted, then
+     * tells the model to fetch these bytes.  Does not change the
+     * global setting for which bytes to extract.
+     * 
+     */
     public void extractNewBytes() {
         JFrame mainFrame = PoliceApp.getApplication().getMainFrame();
         
@@ -850,23 +852,22 @@ public class PoliceView extends FrameView implements ListSelectionListener {
                     null,
                     "" + model.getOffset());
         
-        
+        int offset = INVALID;
         //If a string was returned, say so.
         if ((s != null) && (s.length() > 0)) {
             // Convert the string to an integer
             try {
-                int offset = Integer.parseInt(s);
-                model.setOffset(offset);
+                offset = Integer.parseInt(s);
             }
             catch (NumberFormatException e) {
                 setStatusText("Error: " + s + " is not a number.");
                 return;
             }
-            //return;
         }
         
         
-         s = (String)JOptionPane.showInputDialog(
+        int numBytes = INVALID;
+        s = (String)JOptionPane.showInputDialog(
                     mainFrame,
                     "Enter number of bytes to extract:",
                     "Edit number of bytes",
@@ -880,13 +881,26 @@ public class PoliceView extends FrameView implements ListSelectionListener {
         if ((s != null) && (s.length() > 0)) {
             // Convert the string to an integer
             try {
-                int offset = Integer.parseInt(s);
-                model.setNumBytes(offset);
+                numBytes = Integer.parseInt(s);
             }
             catch (NumberFormatException e) {
                 setStatusText("Error: " + s + " is not a number.");
+                return;
             }
-            return;
+        }
+        
+        System.out.println("NumBytes:" + numBytes + " offset: " + offset);
+        
+        
+        // User has specified new bytes to extract.  Tell the model to
+        // make these changes.
+        if (offset != INVALID && numBytes != INVALID) {
+            int [] selections = displayTable.getSelectedRows();
+            for (int i = 0; i < selections.length; i++) {
+                selections[i] = displayTable.convertRowIndexToModel(selections[i]);
+            }
+            setStatusText("Editing the offsets of " + selections.length + " files.");
+            model.editOffsets(selections, offset, numBytes);
         }
         
     }
@@ -1007,5 +1021,7 @@ public class PoliceView extends FrameView implements ListSelectionListener {
     
     private static final String DELETE_STRING = "deleteFiles";
     private static final String OPEN_STRING = "openFiles";
+    
+    private static final int INVALID = -1;
     
 }

@@ -64,12 +64,13 @@ public class BackgroundWorker extends SwingWorker<List<TableRow>, TableRow> {
             }
             List<String> hashes = FileHashConverter.getFileHashes(f, hashAlgorithms);
             
-            String hexBytes = FileHashConverter.getFileByteHex(offset, numBytes, f);
+            BytesResult hexBytes = FileHashConverter.getFileByteHex(offset, numBytes, f);
             String fileType = model.getFileType(f); 
             
             TableRow current = new TableRow(f, hashes.get(0), hashes.get(1), 
-                                            hexBytes, fileType, offset, numBytes);
-            
+                                            hexBytes, 
+                                            fileType);
+                        
             // Results holds everything completed so far
             results.add(current);
             // We are finished with this file, let the thread know

@@ -16,24 +16,38 @@ import javax.swing.filechooser.FileFilter;
  */
 public class VideoFilter extends FileFilter implements java.io.FileFilter {
     
+    /** The file extension for .avi movies.*/
     public final static String AVI = "avi";
+    /** The file extension for .divx movies.*/
     public final static String DIVX = "divx";
-    public final static String DV = "dv";
-    public final static String MOV = "mov";
-    public final static String MOVIE = "movie";
-    public final static String MPEG = "mpeg";
-    public final static String MPG = "mpg";
-    public final static String MP4 = "mp4";
-    // quicktime
-    public final static String QT = "qt";
-    // RealMedia
-    public final static String RM = "rm";
     
-     // Windows Media Video
+    /** The file extension for .dv movies.*/
+    public final static String DV = "dv";
+    
+    /** The file extension for .mov movies.*/
+    public final static String MOV = "mov";
+    
+    /** The file extension for .avi movies.*/
+    public final static String MOVIE = "movie";
+    
+    /** The file extension for .mpeg movies.*/
+    public final static String MPEG = "mpeg";
+    
+    /** The file extension for .mpg movies.*/
+    public final static String MPG = "mpg";
+    
+    /** The file extension for .mp4 movies.*/
+    public final static String MP4 = "mp4";
+
+    /** The file extension for QuickTime movies.*/
+    public final static String QT = "qt";
+
+    
+    /** The file extension for RealMedia movies.*/
+    public final static String RM = "rm";
+    /** The file extension for Windows Media Video movies.*/
     public final static String WMV = "wmv";
     
-    
-
     
     public String getDescription() {
         return "Movie Files";

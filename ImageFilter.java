@@ -21,10 +21,11 @@ public class ImageFilter extends FileFilter implements java.io.FileFilter {
     public final static String png = "png";
     public final static String bmp = "bmp";
     
+    public static final String DESCRIPTION = "Image Files";
 
     
     public String getDescription() {
-        return "Image Files";
+        return DESCRIPTION;
     }
     
     public boolean accept(File f) {
