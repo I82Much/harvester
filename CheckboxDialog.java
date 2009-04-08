@@ -11,7 +11,8 @@ import javax.swing.JPanel;
 
 
 /**
- * This allows user to 
+ * This class represents a dialog box with a set of checkboxes, mainly used
+ * for configuring options.
  * Based on code available at http://forums.sun.com/thread.jspa?threadID=5357662
  * @author Nick
  */

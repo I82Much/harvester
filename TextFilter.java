@@ -28,8 +28,6 @@ public class TextFilter extends FileFilter implements java.io.FileFilter {
         }
         String extension = getExtension(f);
         
-        System.out.println(extension);
-        
         if (extension != null) {
             if (extension.equals(txt) ||
                 extension.equals(text) ||

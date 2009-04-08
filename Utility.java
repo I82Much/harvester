@@ -1,5 +1,9 @@
 package Harvester;
 
+/**
+ * This class holds various utility methods we need.
+ * @author Nick
+ */
 public class Utility {
     
     

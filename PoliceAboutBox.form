@@ -28,41 +28,34 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Component id="appTitleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="appDescLabel" alignment="0" pref="502" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" max="-2" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="appTitleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="appDescLabel" alignment="0" pref="502" max="32767" attributes="0"/>
-                          <Group type="102" alignment="0" max="-2" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="versionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="authorsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="homepageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="nicholasDunn" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                                      <Component id="jeremyFishman" alignment="0" max="32767" attributes="1"/>
-                                      <Component id="tuckerHermans" alignment="0" max="32767" attributes="1"/>
-                                  </Group>
-                                  <Component id="homepageLink" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="versionNumber" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" pref="203" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="118" pref="118" max="118" attributes="0"/>
-                              <Component id="appVersionLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="384" max="32767" attributes="0"/>
-                          </Group>
+                          <Component id="versionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="authorsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="homepageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="nicholasDunn" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                              <Component id="jeremyFishman" alignment="0" max="32767" attributes="1"/>
+                              <Component id="tuckerHermans" alignment="0" max="32767" attributes="1"/>
+                          </Group>
+                          <Component id="homepageLink" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="versionNumber" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="203" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <Component id="closeButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="118" pref="118" max="118" attributes="0"/>
+                      <Component id="appVersionLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="384" max="32767" attributes="0"/>
                   </Group>
+                  <Component id="closeButton" alignment="1" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

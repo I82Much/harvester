@@ -59,24 +59,24 @@ public class VideoFilter extends FileFilter implements java.io.FileFilter {
         }
 
         String extension = getExtension(f);
-            if (extension != null) {
-                if (extension.equals(AVI)  ||
-                    extension.equals(DIVX) ||
-                    extension.equals(DV)   ||
-                    extension.equals(MOV)  ||
-                    extension.equals(MOVIE)||
-                    extension.equals(MPEG) ||
-                    extension.equals(MPG)  ||
-                    extension.equals(MP4)  ||
-                    extension.equals(QT)   ||
-                    extension.equals(RM)   ||
-                    extension.equals(WMV))
-                {
-                        return true;
-                } else {    
-                    return false;
-                }
+        if (extension != null) {
+            if (extension.equals(AVI)  ||
+                extension.equals(DIVX) ||
+                extension.equals(DV)   ||
+                extension.equals(MOV)  ||
+                extension.equals(MOVIE)||
+                extension.equals(MPEG) ||
+                extension.equals(MPG)  ||
+                extension.equals(MP4)  ||
+                extension.equals(QT)   ||
+                extension.equals(RM)   ||
+                extension.equals(WMV)) {
+                return true;
+            } 
+            else {    
+                return false;
             }
+        }
         return false;
     }
     

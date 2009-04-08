@@ -2,9 +2,11 @@ package Harvester;
 
 import java.io.File;
 
+//TODO: rename this class
 /**
  * Houses all of the information needed for a row of our table
  * @author Nick Dunn
+ * 
  */
 public class TableRow {
     private File file;

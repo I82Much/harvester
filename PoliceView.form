@@ -29,7 +29,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jScrollPane1" pref="321" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" pref="337" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -50,7 +50,7 @@
                 <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="model" type="code"/>
                 </Property>
-                <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor" postCode="displayTable.setDefaultRenderer(Object.class, new TableRenderer());&#xa;displayTable.setAutoCreateRowSorter(true);&#xa;&#xa;// Ensure that the user can drop anywhere in the table&#xa;displayTable.setFillsViewportHeight(true);&#xa;&#xa;displayTable.getTableHeader().addMouseListener(new ClickableListener());">
+                <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor" postCode="displayTable.setDefaultRenderer(Object.class, new TableRenderer());&#xa;TableRowSorter sorter = new TableRowSorter(model);&#xa;sorter.setComparator(PoliceModel.NUM_UNIQUE_BYTES_INDEX, new NumericalComparator());&#xa;displayTable.setRowSorter(sorter);&#xa;&#xa;// Ensure that the user can drop anywhere in the table&#xa;displayTable.setFillsViewportHeight(true);&#xa;// Show a hand icon when mousing over the header&#xa;displayTable.getTableHeader().addMouseListener(new ClickableListener());">
                   <TableColumnModel selectionModel="0"/>
                 </Property>
                 <Property name="componentPopupMenu" type="javax.swing.JPopupMenu" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
@@ -254,7 +254,18 @@
                   <action class="Harvester.PoliceView" id="configureNumBytes" methodName="configureNumBytes"/>
                 </Property>
                 <Property name="text" type="java.lang.String" resourceKey="jMenuItem4.text"/>
+                <Property name="toolTipText" type="java.lang.String" resourceKey="jMenuItem4.toolTipText"/>
                 <Property name="name" type="java.lang.String" value="jMenuItem4" noResource="true"/>
+              </Properties>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem5">
+              <Properties>
+                <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
+                  <action class="Harvester.PoliceView" id="changeSavedColumns" methodName="changeSavedColumns"/>
+                </Property>
+                <Property name="text" type="java.lang.String" resourceKey="jMenuItem5.text"/>
+                <Property name="toolTipText" type="java.lang.String" resourceKey="jMenuItem5.toolTipText"/>
+                <Property name="name" type="java.lang.String" value="jMenuItem5" noResource="true"/>
               </Properties>
             </MenuItem>
           </SubComponents>
@@ -274,6 +285,7 @@
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
                   <action class="Harvester.PoliceView" id="showAboutBox" methodName="showAboutBox"/>
                 </Property>
+                <Property name="toolTipText" type="java.lang.String" resourceKey="aboutMenuItem.toolTipText"/>
                 <Property name="name" type="java.lang.String" value="aboutMenuItem" noResource="true"/>
               </Properties>
               <AuxValues>

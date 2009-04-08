@@ -6,8 +6,8 @@
 package Harvester;
 
 /**
- * @see https://www.limewire.org/fisheye/browse/~raw,r=1.3/limecvs/core/com/bitzi/util/Base32.java
- * @author Nick
+ * Code taken from
+ * https://www.limewire.org/fisheye/browse/~raw,r=1.3/limecvs/core/com/bitzi/util/Base32.java
  * 
  */
 

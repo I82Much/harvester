@@ -185,7 +185,7 @@ public class PoliceView extends FrameView implements ListSelectionListener {
 
         ActionListener actionListener = new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                System.out.println("Selected: " + actionEvent.getActionCommand());
+                //System.out.println("Selected: " + actionEvent.getActionCommand());
             }
         };
 
@@ -364,6 +364,7 @@ public class PoliceView extends FrameView implements ListSelectionListener {
         jMenu1 = new javax.swing.JMenu();
         jMenuItem3 = new javax.swing.JMenuItem();
         jMenuItem4 = new javax.swing.JMenuItem();
+        jMenuItem5 = new javax.swing.JMenuItem();
         javax.swing.JMenu helpMenu = new javax.swing.JMenu();
         javax.swing.JMenuItem aboutMenuItem = new javax.swing.JMenuItem();
         statusPanel = new javax.swing.JPanel();
@@ -517,8 +518,15 @@ public class PoliceView extends FrameView implements ListSelectionListener {
 
         jMenuItem4.setAction(actionMap.get("configureNumBytes")); // NOI18N
         jMenuItem4.setText(resourceMap.getString("jMenuItem4.text")); // NOI18N
+        jMenuItem4.setToolTipText(resourceMap.getString("jMenuItem4.toolTipText")); // NOI18N
         jMenuItem4.setName("jMenuItem4"); // NOI18N
         jMenu1.add(jMenuItem4);
+
+        jMenuItem5.setAction(actionMap.get("changeSavedColumns")); // NOI18N
+        jMenuItem5.setText(resourceMap.getString("jMenuItem5.text")); // NOI18N
+        jMenuItem5.setToolTipText(resourceMap.getString("jMenuItem5.toolTipText")); // NOI18N
+        jMenuItem5.setName("jMenuItem5"); // NOI18N
+        jMenu1.add(jMenuItem5);
 
         menuBar.add(jMenu1);
 
@@ -526,6 +534,7 @@ public class PoliceView extends FrameView implements ListSelectionListener {
         helpMenu.setName("helpMenu"); // NOI18N
 
         aboutMenuItem.setAction(actionMap.get("showAboutBox")); // NOI18N
+        aboutMenuItem.setToolTipText(resourceMap.getString("aboutMenuItem.toolTipText")); // NOI18N
         aboutMenuItem.setName("aboutMenuItem"); // NOI18N
         helpMenu.add(aboutMenuItem);
 
@@ -782,6 +791,20 @@ public class PoliceView extends FrameView implements ListSelectionListener {
         fixButtonStatuses();
     }
     
+    @Action
+    public void changeSavedColumns() {
+        CheckboxDialog dialog = 
+                new CheckboxDialog(PoliceApp.getApplication().getMainFrame(), 
+                                   "Which columns do you want written to file?", 
+                                   PoliceModel.COLUMN_HEADERS, 
+                                   model.getColumnsToSave());
+        // Launch the dialog
+        dialog.select();
+        model.setColumnsToSave(dialog.getSelections());
+        dialog = null;
+        
+    }
+    
 
     public javax.swing.JProgressBar getProgressBar() {
         return progressBar;
@@ -889,9 +912,6 @@ public class PoliceView extends FrameView implements ListSelectionListener {
             }
         }
         
-        System.out.println("NumBytes:" + numBytes + " offset: " + offset);
-        
-        
         // User has specified new bytes to extract.  Tell the model to
         // make these changes.
         if (offset != INVALID && numBytes != INVALID) {
@@ -988,6 +1008,7 @@ public class PoliceView extends FrameView implements ListSelectionListener {
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
+    private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

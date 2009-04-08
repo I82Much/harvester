@@ -75,9 +75,9 @@ public class PoliceModel extends AbstractTableModel {
     public static final String MD5_STRING = "MD5 Hash (Base 16)";
     public static final String SHA_1_STRING = "SHA-1 Hash (Base 32)";
     
-    public static final String BYTES_EXTRACTED_STRING = "Bytes Extracted";
+    public static final String BYTES_EXTRACTED_STRING = "Which bytes extracted";
     
-    public static final String HEX_BYTES_STRING = "Hex bytes";
+    public static final String HEX_BYTES_STRING = "Hex byte string";
     public static final String NUM_UNIQUE_BYTES_STRING = "Number of unique bytes";
     public static final String FILE_TYPE_STRING = "File Type";
     
@@ -88,6 +88,18 @@ public class PoliceModel extends AbstractTableModel {
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
     public static final String COLUMN_SEPARATOR = ",";
     
+    public static final String[] COLUMN_HEADERS = {
+        FILES_STRING,
+        MD5_STRING,
+        SHA_1_STRING,
+        BYTES_EXTRACTED_STRING,
+        HEX_BYTES_STRING,
+        NUM_UNIQUE_BYTES_STRING,
+        FILE_TYPE_STRING
+    };
+    
+    
+    
     
     public static final int DEFAULT_NUM_BYTES = 10;
     public static final int DEFAULT_BYTE_OFFSET = 43000;
@@ -97,6 +109,16 @@ public class PoliceModel extends AbstractTableModel {
     
     private int numBytes;
     private int offset;
+    
+    private boolean[] columnsToSave;
+    
+    public static final String DEFAULT_COLUMNS_TO_SAVE_KEY = "defaultColumns";
+    /**
+     * A '1' at position i indicates that the column with index i should be written
+     * to file.  
+     * @see COLUMN_HEADERS
+     */
+    public static final String DEFAULT_COLUMNS_TO_SAVE_VALUE = "1111100";
     
     public PoliceModel() {
         videoFilter = new VideoFilter();
@@ -115,6 +137,23 @@ public class PoliceModel extends AbstractTableModel {
         offset = prefs.getInt(DEFAULT_BYTE_OFFSET_STRING, DEFAULT_BYTE_OFFSET);
                 
         data = new ArrayList<TableRow>();
+        
+        String colsToSaveBitString = prefs.get(DEFAULT_COLUMNS_TO_SAVE_KEY, 
+                                                DEFAULT_COLUMNS_TO_SAVE_VALUE);
+        columnsToSave = Utility.fromBitString(colsToSaveBitString);
+                
+    }
+    
+    public boolean[] getColumnsToSave() {
+        return columnsToSave;
+    }
+    
+    public void setColumnsToSave(boolean[] columnsToSave) {
+        this.columnsToSave = columnsToSave;
+        // Store this new setting in the preferences so that it's remembered
+        // each time user starts up
+        prefs.put(DEFAULT_COLUMNS_TO_SAVE_KEY, Utility.toBitString(columnsToSave));
+        
     }
     
     public void setView(PoliceView view) {
@@ -154,6 +193,7 @@ public class PoliceModel extends AbstractTableModel {
         fireTableChanged(new TableModelEvent(this, TableModelEvent.HEADER_ROW));
     }
     
+        
     /**
      * User can only write to disk if he has more than 0 entries
      * @return
@@ -403,25 +443,7 @@ public class PoliceModel extends AbstractTableModel {
     
     @Override
     public String getColumnName(int columnIndex) {
-        switch (columnIndex) {
-            case FILES_INDEX:
-                return FILES_STRING;
-            case MD5_INDEX:
-                return MD5_STRING;
-            case SHA_1_INDEX:
-                return SHA_1_STRING;
-            case BYTES_EXTRACTED_INDEX:
-                return BYTES_EXTRACTED_STRING;
-            case HEX_BYTES_INDEX:
-                return HEX_BYTES_STRING;
-            case NUM_UNIQUE_BYTES_INDEX:
-                return NUM_UNIQUE_BYTES_STRING;
-            case FILE_TYPE_INDEX:
-                return FILE_TYPE_STRING;
-            default:
-                return "Error: Invalid columnIndex in getColumnName";
-        }
-        
+        return COLUMN_HEADERS[columnIndex];
     }
     
     /**
@@ -446,7 +468,6 @@ public class PoliceModel extends AbstractTableModel {
         switch(col) {
             case FILES_INDEX:
                 return data.get(row).getFile().getName();
-                
             case MD5_INDEX:
                 return data.get(row).getMD5Hash();
             case SHA_1_INDEX:
@@ -476,47 +497,58 @@ public class PoliceModel extends AbstractTableModel {
      *        rows.
      */
     public void save(File output, int[] selections) {
+        
+        int numColsToSave = 0;
+        for (boolean b : columnsToSave) {
+            if (b) {
+                numColsToSave++;
+            }
+        }
+        
         try {
             BufferedWriter outputStream = 
                 new BufferedWriter(new FileWriter(output));
             
-            // Write the header
-            outputStream.write(FILES_STRING);
-            outputStream.write(COLUMN_SEPARATOR);
-            outputStream.write(MD5_STRING);
-            outputStream.write(COLUMN_SEPARATOR);
-            outputStream.write(SHA_1_STRING);
-            outputStream.write(COLUMN_SEPARATOR);
-            outputStream.write("Bytes extracted");
-            outputStream.write(COLUMN_SEPARATOR);
-            outputStream.write("Hex data with a \\x prior to each hex value");
-           
+            
+            int colsWritten = 0;
+            // Go through each of the columns; if we are saving it, write 
+            // out the corresponding header
+            for (int i = 0; i < NUM_COLS; i++) {
+                if (columnsToSave[i]) {
+                    outputStream.write(COLUMN_HEADERS[i]);
+                    
+                    colsWritten++;
+                    // We want to append a separator if there are more values coming
+                    if (colsWritten < numColsToSave) {
+                        outputStream.write(COLUMN_SEPARATOR);
+                    }
+                }
+            }
             outputStream.write(LINE_SEPARATOR);
             
-            
+            // Now we need to go through and write each line to file
             StringBuilder builder = new StringBuilder();
             
-            // Write each line to a separate line in the file
             for (int i = 0; i < selections.length; i++) {
-                int index = selections[i];
-                
                 builder.setLength(0);
                 
-                TableRow current = data.get(index);
+                int index = selections[i];
                 
-                builder.append(current.getFile().getName()); 
-                builder.append(COLUMN_SEPARATOR); 
-                builder.append(current.getMD5Hash());
-                builder.append(COLUMN_SEPARATOR); 
-                builder.append(current.getSha1Hash());
-                builder.append(COLUMN_SEPARATOR); 
-                builder.append(current.getByteString());
-                builder.append(COLUMN_SEPARATOR);
-                builder.append(current.getHexBytes());
+                colsWritten = 0;
+                // go through and see if the column actually should be written.
+                for (int j = 0; j < NUM_COLS; j++) {
+                    if (columnsToSave[j]) {
+                        colsWritten++;
+                        builder.append(getValueAt(index, j));
+                        if (colsWritten < numColsToSave) {
+                            builder.append(COLUMN_SEPARATOR);
+                        }
+                    }
+                }
                 builder.append(LINE_SEPARATOR);
-                
                 outputStream.write(builder.toString());
             }
+              
             outputStream.close();
             
             view.setStatusText("Successfully wrote " + selections.length + 
